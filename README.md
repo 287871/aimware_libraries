@@ -1,6 +1,8 @@
 # aimware libraries
 
 --region renderer
+Copy and paste this inside of your lua script at the first line.
+
 local Library_INSTALLED = false;
 local Library_REWRITE = false;
 file.Enumerate(function(filename)
@@ -14,3 +16,4 @@ if not Library_INSTALLED or Library_REWRITE then
     file.Write("Libraries/GraphicLib.lua", body);
 end
 RunScript("Libraries/GraphicLib.lua");
+Parameters
