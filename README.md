@@ -1,3 +1,3 @@
-# aimware_libraries
+# aimware libraries
 
-# renderer
+# Copy and paste this inside of your lua script at the first line.
