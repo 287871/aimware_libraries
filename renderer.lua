@@ -1,5 +1,3 @@
-renderer = {}
-
 local math_sin = math.sin
 local math_cos = math.cos
 local math_rad = math.rad
@@ -64,6 +62,8 @@ local draw_UpdateTexture,
     draw.CreateFont,
     draw.Text
 local common_DecodePNG, common_DecodeJPEG, common_RasterizeSVG = common.DecodePNG, common.DecodeJPEG, common.RasterizeSVG
+
+renderer = {screen_size = draw_GetScreenSize}
 
 local function math_round(number, precision)
     local mult = 10 ^ (precision or 0)
@@ -290,7 +290,7 @@ function renderer.circle_outline(x, y, r, g, b, a, radius, start_degrees, percen
     bad_argument(x and y and radius and start_degrees and percentage and thickness, "circle_outline", "number")
 
     local thickness = thickness + radius
-    local percentage = percentage * 360
+    local percentage = math_abs(percentage * 360)
     local radian = radian or 1
 
     renderer.color(r, g, b, a)
@@ -324,20 +324,23 @@ function renderer.triangle(x0, y0, x1, y1, x2, y2, r, g, b, a)
     renderer.color()
 end
 
-function renderer.rectangle_rounded(x1, y1, x2, y2, r, g, b, a, radius, flags, tl, tr, bl, br)
-    bad_argument(x1 and y1 and x2 and y2 and radius, "rectangle_rounded", "number")
+function renderer.rectangle_rounded(x, y, w, h, r, g, b, a, radius, flags, tl, tr, bl, br)
+    bad_argument(x and y and w and h and radius, "rectangle_rounded", "number")
 
     local tl = tl or 0
     local tr = tr or 0
     local bl = bl or 0
     local br = br or 0
 
+    local w = (w < 0) and (x - math_abs(w)) or x + w
+    local h = (h < 0) and (y - math_abs(h)) or y + h
+
     renderer.color(r, g, b, a)
 
     if flags:find("f") then
-        draw_RoundedRectFill(x1, y1, x2, y2, radius, tl, tr, bl, br)
+        draw_RoundedRectFill(x, y, w, h, radius, tl, tr, bl, br)
     elseif flags:find("o") then
-        draw_RoundedRect(x1, y1, x2, y2, radius, tl, tr, bl, br)
+        draw_RoundedRect(x, y, w, h, radius, tl, tr, bl, br)
     end
 
     renderer.color()
@@ -426,16 +429,16 @@ end
 
 function renderer.load_jpg(contents)
     local rgba, width, height = common.DecodeJPEG(contents or nil)
-    local texture = draw.CreateTexture(rgba, width, height)
+    local texture = draw_CreateTexture(rgba, width, height)
     return texture, {rgba, width, height}
 end
 
-function renderer.texture(texture, x, y, w, h)
+function renderer.texture(texture, x, y, w, h, r, g, b, a)
     bad_argument(texture, "texture", "userdata")
     bad_argument(x and y and w and h, "texture", "number")
 
     draw_SetTexture(texture)
-    draw_FilledRect(x, y, x + w, y + h)
+    renderer.rectangle(x, y, w, h, r, g, b, a, "f")
     draw_SetTexture(nil)
 end
 
